@@ -2,7 +2,12 @@ import socket,sys
 import winsound
 import os
 
+def animation_generator(percent):
+    str = "="*(percent//10)
+    return f"[{str:<{10}}]"
+
 HeaderLength = 20
+k = 500
 
 print(f'Howdy !!')
 print(f'Make sure the sender and receiver are connected to same network...')
@@ -34,9 +39,10 @@ while True:
             size = int(s.recv(mes_len).decode("utf-8"))
             # print('filename:',filename)
             print('size:',size,'bytes')
-            k = 20
-
+            recvsize = 0
             while True:
+                percent = int((recvsize/size)*100)
+                print(animation_generator(percent),percent,'%',end='')
                 try:
                     x = s.recv(1024*k)
                     if x == '' or x == b'' or x == 'end':
@@ -44,11 +50,12 @@ while True:
                     f.write(x)
                     f.flush()
                     os.fsync(f.fileno())
-
+                    recvsize += 1024*k
+                    print('',end='\r')
                 except:
                     f.close()
                     break
-
+            print()
             winsound.MessageBeep()
             f.close()
             print('received file:',f.name)
@@ -70,15 +77,21 @@ while True:
             header2 = f"{len(str(size)):<{HeaderLength}}".encode('utf-8') + str(size).encode('utf-8')
             s1.send(header1)
             s1.send(header2)
+            sentsize=0
             while True:
+                percent = int((sentsize/size)*100)
+                print(animation_generator(percent),percent,'%',end='')
                 try:
-                    x = f1.read(1024 * 20)
+                    x = f1.read(1024 * k)
                     if x == b'':
                         s1.send('end')
                     s1.send(x)
+                    sentsize += 1024 * k
+                    print('',end='\r')
                 except:
                     f1.close()
                     break
+            print()
             s1.close()
             print('sent:',f1.name)
 
