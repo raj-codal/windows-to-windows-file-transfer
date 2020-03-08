@@ -61,6 +61,8 @@ while True:
         while True:
             filename = input(
                 "Enter the file to be transferred along with the path (or simply drag the file here in the console):")
+            if filename[0] == '"':
+                filename = filename[1:-1]
             f1 = open(filename, 'rb')
             name = os.path.basename(f1.name)
             size = os.stat(f1.name).st_size
